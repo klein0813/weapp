@@ -1,0 +1,38 @@
+<!--components/imagePreview/imagePreview.wxml-->
+<wxs module="touch" src="./touch.wxs"></wxs> 
+<view class="previewImage" wx:if="{{isPreview}}">
+  <!-- <include src="../header/header.wxml"></include> -->
+  <view class="previewImage-container">
+    <view class="previewImage-box"
+      style="transform:translate3d({{boxTranslateX}},0px,0px);"
+      change:prop="{{touch.propObserver}}"
+      prop="{{propValue}}"
+      bindtouchstart="{{touch.touchstart}}"
+      bindtouchmove="{{touch.touchmove}}"
+      bindtouchend="{{touch.touchend}}"
+      bindtap="{{touch.tap}}"
+      bindlongpress="{{touch.longpress}}">
+      <view
+        class="previewImage-item"
+        wx:for="{{pictures}}"
+        wx:key>
+        <image
+          lazy-load="{{true}}"
+          class="previewImage-image"
+          style="transform:{{transform}};transtion:{{transtion}};"
+          src="{{item}}"
+          mode="widthFix"
+          data-current="{{index}}"
+          bindload="imageLoaded">
+        </image>
+        <view class="previewImage-background-image" wx:if="{{!hiddenBgImg[currentSwiper]}}"></view>
+      </view>
+    </view>
+  </view>
+  <view class="previewImage-text" style="height: {{CustomBar}}px; line-height: {{CustomBar}}px;">{{currentSwiper + 1}}/{{pictures.length}}</view>
+</view>
+<modal
+  is-show="{{showModal}}"
+  content="确认保存图片到手机？"
+  bindconfirm="saveImage">
+</modal>

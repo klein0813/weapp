@@ -1,1 +1,1 @@
-#wechat-applet
+# wechat-applet

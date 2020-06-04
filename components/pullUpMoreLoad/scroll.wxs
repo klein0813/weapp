@@ -1,0 +1,123 @@
+var touch = null            // 触摸起始位置
+var touchDirection = null   // 触摸方向，vertical -> 纵向，horizontal -> 横向
+var lowerLoading = {        // 底部加载动画的元素相关信息
+  instance: null,             // 上拉动画的元素实例
+  anchor: null,               // 上拉动画的元素id
+  direction: -1               // 方向，-1 表示上拉
+}
+
+var lock = false            // 锁，当在加载中时禁用上拉
+var currentHeight = 0       // 当前拉动的高度
+var reachMinHeight = false  // 为true表示此次拉动的达到最小高度，可以触发加载（刷新）事件
+var loading = null          // 此次拉动的加载动画元素实例相关信息，上拉时等于lowerLoading
+var loadingHeight = 60      // 显示加载动画时的高度
+var loadingMaxHeight = 120  // 拉动的最大高度，currentHeight不可高于此高度
+var loadingMinHeight = 30  // 拉动的最小高度，低于此高度不触发加载（刷新）事件
+var rpx = 0.5               // px 与 rpx 换算比例，根据传入的 windowHeight动态计算，不传则默认 0.5
+
+function touchstart (event, instance) {
+  touch = event.touches[0]
+  var dataset = event.currentTarget.dataset
+  if (dataset.windowWidth) {
+    rpx = dataset.windowWidth / 750
+  }
+  lowerLoading = {
+    instance: instance.selectComponent('#loading-lower'),
+    anchor: 'loading-lower',
+    direction: -1
+  }
+}
+
+function touchmove (event, ownerInstance) {
+  var currentTouch = event.touches[0]
+  if (touchDirection === null) {
+    var touchDeltaX = Math.abs(touch.clientX - currentTouch.clientX)
+    var touchDeltaY = Math.abs(touch.clientY - currentTouch.clientY)
+    touchDirection = (touchDeltaY - touchDeltaX) > 3 ? 'vertical' : 'horizontal'
+    return
+  } else if (touchDirection === 'horizontal') {
+    return
+  } else if (!loading) {
+    if (currentTouch.clientY >= touch.clientY) {
+      return
+    }
+    loading = lowerLoading
+  }
+
+  var dataset = event.currentTarget.dataset
+  if (lock || !dataset.hasMore && loading === lowerLoading) {
+    return
+  }
+
+  var height = (currentTouch.clientY - touch.clientY) * loading.direction
+  if (height < 0 || height > loadingMaxHeight * rpx) {
+    return
+  }
+
+  loading.instance.setStyle({
+    height: height + 'px'
+  })
+  event.instance.setStyle({
+    top: (height * loading.direction) + 'px'
+  })
+
+  currentHeight = height
+  if (!reachMinHeight) {
+    reachMinHeight = currentHeight > loadingMinHeight * rpx
+  }
+}
+
+function touchend (event, instance) {
+  if (loading && reachMinHeight) {
+    loading.instance.setStyle({
+      height: loadingHeight + 'rpx',
+      transition: 'height ease-out 500ms'
+    })
+    event.instance.setStyle({
+      top: (loadingHeight * loading.direction) + 'rpx',
+      transition: 'top ease-out 500ms'
+    })
+    lock = {
+      loading: loading,
+      scroll: event
+    }
+    instance.callMethod('showLoading')
+    if (loading == lowerLoading) {
+      instance.callMethod('scrollToLower')
+    }
+  } else if (loading) {
+    loading.instance.setStyle({
+      height: 0,
+      transition: 'height ease-out 500ms'
+    })
+    event.instance.setStyle({
+      top: 0,
+      transition: 'top ease-out 500ms'
+    })
+  }
+  loading = null
+  currentHeight = 0
+  reachMinHeight = false
+  touchDirection = null
+}
+
+function hideLoading () {
+  if (lock) {
+    lock.loading.instance.setStyle({
+      height: 0,
+      transition: 'height ease-out 500ms'
+    })
+    lock.scroll.instance.setStyle({
+      top: 0,
+      transition: 'top ease-out 500ms'
+    })
+    lock = false
+  }
+}
+
+module.exports = {
+  touchstart: touchstart,
+  touchmove: touchmove,
+  touchend: touchend,
+  hideLoading: hideLoading
+}

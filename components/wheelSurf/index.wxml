@@ -1,0 +1,26 @@
+<!--components/wheel-surf/index.wxml-->
+<block>
+  <canvas
+    wx:if="{{!canvasImg}}"
+    type="2d"
+    class="canvas"
+    style="opacity: 0; width: {{canvasSize}}rpx; height: {{canvasSize}}rpx;">
+  </canvas>
+</block>
+<view class="container" style="height: {{canvasSize}}rpx;">
+  <image
+    wx:if="{{canvasImg}}"
+    class="canvas-image {{show?'rotate':''}}"
+    style="transform: rotate({{angle}}deg); width: {{canvasSize}}rpx;"
+    mode="widthFix"
+    src="{{canvasImg}}"
+    bindload="imageLoaded">
+  </image>
+  <image
+    class="start"
+    style="opacity: {{canvasImg?1:0}}; width: {{180 * rate}}rpx"
+    src="{{wheelStyleShow.startImg}}"
+    mode="widthFix"
+    bindtap="play">
+  </image>
+</view>

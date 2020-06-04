@@ -1,0 +1,27 @@
+/* components/wheel-surf/index.wxss */
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 500rpx;
+}
+
+.canvas {
+  position: absolute;
+}
+
+.canvas-image {
+  height: auto;
+}
+
+.start {
+  height: auto;
+  position: absolute;
+  z-index: 2;
+}
+
+.rotate {
+  transition: transform 4s ease-in-out;
+}
